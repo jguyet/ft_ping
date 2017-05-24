@@ -133,7 +133,11 @@ int						sub_flags(t_string *string, int i);
 **	GET
 */
 
+# ifdef __linux__
+
 typedef long long int intmax_t;
+
+# endif
 
 char					get_char(t_string *t);
 unsigned char			get_uchar(t_string *t);
