@@ -125,10 +125,10 @@ int			wait_message_two(t_ping *ping, t_packet_received *packet_r)
 			printf("MSG_TRUNC ret : %d\n", ret);
 			return (MESSAGE_RECEIVED_TRUC);
 		}
-		printf("msg : %s\n", packet_r->iov[0].iov_base);
+		//printf("msg : %s\n", packet_r->iov[0].iov_base);
 		return (MESSAGE_RECEIVED_SUCCES);
 	}
-	printf("ret1 : %d\n", ret);
+	//printf("ret1 : %d\n", ret);
 	return (MESSAGE_RECEIVED_ERROR);
 }
 
