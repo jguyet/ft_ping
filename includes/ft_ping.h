@@ -114,6 +114,17 @@ struct icmphdr
 #define ICMP_ADDRESSREPLY	18	/* Address Mask Reply		*/
 #define NR_ICMP_TYPES		18
 
+
+/*
+** Changes the default value set by the TCP/IP service provider in the
+** TTL field of the IP header in outgoing datagrams.
+** IP_TTL support is not required;
+** to check whether IP_TTL is supported,
+** use getsockopt to get current options.
+** If getsockopt fails, IP_TTL is not supported.
+*/
+# define TCP_IP_PACKET_HEADER_SERVICE IP_TTL
+
 /*
 ** icmp packet struct
 */
@@ -145,9 +156,10 @@ typedef struct				s_ping
 	int						sock;					/* socket descriptor ID		*/
 	struct sockaddr_in		addr;					/* sockaddr of destination	*/
 	int						pid;					/* pid of current program	*/
+	int						ttl;
 }							t_ping;
 
-BOOLEAN						icmp_initialize_connection(t_ping *ping);
+BOOLEAN						icmp_initialize_connection(t_ping *ping, int ttl);
 
 t_packet_received			*prepare_packet_receiver(t_ping *ping, size_t size);
 void						destruct_packet_receiver(t_packet_received *packet);

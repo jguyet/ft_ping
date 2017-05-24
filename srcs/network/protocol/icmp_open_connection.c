@@ -14,7 +14,12 @@
 
 #include <arpa/inet.h>
 
-static BOOLEAN		socket_connection_is_estabilised(int fd)
+/*
+** static boolean socket_connection_is_estabilised(int fd);
+** return boolean
+** if < 0 return false and print error message
+*/
+static BOOLEAN	socket_connection_is_estabilised(int fd)
 {
 	if (fd < 0)
 	{
@@ -24,17 +29,20 @@ static BOOLEAN		socket_connection_is_estabilised(int fd)
 	return (true);
 }
 
-
-
-BOOLEAN		icmp_initialize_connection(t_ping *ping)
+/*
+** boolean	icmp_initialize_connection(t_ping *ping, int ttl);
+** Init icmp Socket connection on IPV4
+** protocol ip/icmp
+** setsockopt on tcp/ip header-packet service
+** return boolean
+*/
+BOOLEAN			icmp_initialize_connection(t_ping *ping, int ttl)
 {
-	int val;
-
-	val = 255;
 	ping->sock = socket(PROT_INTERNET_IPV4, NETWORK_FLUX, ICMP_PROTOCOL);
 	if (!socket_connection_is_estabilised(ping->sock))
 		return (false);
-	if (setsockopt(ping->sock, 0, IP_TTL, &val, sizeof(val)) != 0)
+	if (setsockopt(ping->sock, 0, TCP_IP_PACKET_HEADER_SERVICE,\
+		&ttl, sizeof(ttl)) != 0)
 		return (false);
 	ft_bzero(&ping->addr, sizeof(ping->addr));
 	ping->addr.sin_family = PROT_INTERNET_IPV4;
