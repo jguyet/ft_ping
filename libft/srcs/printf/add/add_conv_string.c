@@ -18,10 +18,8 @@ static void		s_trunc(char **s, int length, wchar_t *wtmp)
 {
 	int		size;
 	int		index;
-	char	*string;
 
 	size = (length < 0) ? -length : length;
-	string = ft_strnew(size);
 	if (*s == NULL)
 		return ;
 	index = 0;

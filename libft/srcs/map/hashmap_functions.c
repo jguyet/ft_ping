@@ -31,7 +31,7 @@ static int	parsekey(t_hashmap *table, void *key)
 		}
 	}
 	else if (table->type == 'i')
-		hashkey = (int)key;
+		hashkey = (unsigned long int)key;
 	return (hashkey % table->map_size);
 }
 
@@ -70,7 +70,7 @@ void		*get_hash_value(t_hashmap *table, void *key)
 		element = table->hashtable[hashindex];
 		while (element != NULL)
 		{
-			if (table->type == 'i' && (int)element->key == (int)key)
+			if (table->type == 'i' && element->key == key)
 				return (element->data);
 			else if (table->type == 's'\
 				&& ft_strcmp((char*)element->key, key) == 0)
@@ -108,5 +108,5 @@ int			get_hash_size(t_hashmap *table)
 void		clear_hashtable(t_hashmap *table)
 {
 	free(&table->hashtable);
-	free(&table);
+	//free(&table);
 }

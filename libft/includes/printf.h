@@ -133,6 +133,8 @@ int						sub_flags(t_string *string, int i);
 **	GET
 */
 
+typedef long long int intmax_t;
+
 char					get_char(t_string *t);
 unsigned char			get_uchar(t_string *t);
 wchar_t					get_wchar(t_string *t);
@@ -148,8 +150,8 @@ wchar_t					*get_wstring(t_string *t);
 double					get_double(t_string *t);
 short					get_short(t_string *t);
 unsigned short			get_ushort(t_string *t);
-size_t					get_size_t(t_string *t);
 intmax_t				get_intmax_t(t_string *t);
+size_t					get_size_t(t_string *t);
 int						get_ptr_function(t_string *string, \
 						int i, int f(t_string*, int));
 double					get_float(t_string *t);
