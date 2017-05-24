@@ -126,6 +126,13 @@ typedef struct 				s_packet
 	char 					msg[PACKET_X64];	/* content of message		*/
 }							t_packet;
 
+typedef struct				s_packet_received
+{
+	struct msghdr			header;				/* header of message received	*/
+	struct iovec			*iov_buffers;		/* container of messages 		*/
+}							t_packet_received;
+
+t_packet_received			*prepare_packet_receiver(size_t size);
 
 /*
 ** ping struct

@@ -67,16 +67,18 @@ void		test(t_ping *ping)
 	int i = 1;
 	int sequence = 0;
 	t_packet packet;
-	struct sockaddr_in r_addr;
+	//struct sockaddr_in r_addr;
 
 	for (;;) {
 		long start;
 		
 		start = get_current_time_millis();
-        socklen_t len = sizeof(r_addr);
+        //socklen_t len = sizeof(r_addr);
 
+        t_packet_received *packet_r = prepare_packet_receiver(500);
         
-        if (recvfrom(ping->sock, &packet, sizeof(packet), 0, (struct sockaddr*)&r_addr, &len) > 0)
+        //if (recvfrom(ping->sock, &packet, sizeof(packet), 0, (struct sockaddr*)&r_addr, &len) > 0)
+		if (recvmsg(ping->sock, &packet_r->header, 0))
 		{
 			printf("%d bytes from %s: icmp_seq=%d time=0.%1.3ld ms\n", (int)sizeof(packet.msg), inet_ntoa(ping->addr.sin_addr), sequence, get_current_time_millis() - start);
 		}

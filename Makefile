@@ -37,7 +37,8 @@ INCDIRLIBFT	=	$(LIBFTDIR)/includes/
 SRCSPROG1	=	\
 				srcs/main.c																	\
 				srcs/signals/signals.c														\
-				srcs/network/protocol/icmp_open_connection.c
+				srcs/network/protocol/icmp_open_connection.c								\
+				srcs/network/protocol/icmp_message.c
 
 DSRCSPROG1	=	$(addprefix $(SRCDIR), $(SRCSPROG1))
 
