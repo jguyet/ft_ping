@@ -73,21 +73,15 @@ $(OBJDIR)%.o : $(SRCDIR)%.c | $(OBJDIR)
 	"MAKE    "$(NAMEBASE)" plz wait ..."	$(MAX_COLS)	$(MAX_COLS)	"[$(@)]"
 
 clean:
-	if [[ `rm -R $(OBJDIR) &> /dev/null 2>&1; echo $$?` == "0" ]]; then		\
-		echo -en "\r\033[38;5;101mCLEAN  "									\
+	echo -en "\r\033[38;5;101mCLEAN  "										\
 		"[\033[0m$(NAMEBASE)\033[38;5;101m]\033[K";							\
-	else																	\
-		printf "\r";														\
-	fi
+	rm -rf $(OBJDIR)
 	make -C $(LIBFTDIR) clean
 
 fclean:
-	if [[ `rm $(PROG1) &> /dev/null 2>&1; echo $$?` == "0" ]]; then			\
-		echo -en "\r\033[38;5;124mFCLEAN "									\
+	echo -en "\r\033[38;5;124mFCLEAN "										\
 		"[\033[0m$(NAMEBASE)\033[38;5;124m]\033[K";							\
-	else																	\
-		printf "\r";														\
-	fi
+	rm -rf $(PROG1)
 	rm -rf $(OBJDIR)
 	make -C $(LIBFTDIR) fclean
 
