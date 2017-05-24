@@ -34,9 +34,15 @@ void		destruct_ping(t_ping *ping)
 	free(ping);
 }
 
+/*
+** retourne la somme de total d'octet libre de (void* b)
+** sur la longueur (int len)
+*/
 unsigned short checksum(void *b, int len)
 {
-	ushort	*buf;
+	u_short	*buf;
+	u_short	low;
+	u_short	high;
 	u_int	sum;
 
 	buf = b;
@@ -47,12 +53,16 @@ unsigned short checksum(void *b, int len)
 		len -= 2;
 	}
 	if (len == 1)
-		sum += buf[0] & 0xFF;//*(unsigned char*)buf;
-	sum = (sum >> 16) + (sum & 0xFFFF);
-	sum += (sum >> 16);
-	return (~sum);
+		sum += buf[0] & 0xFF;
+	low = (sum & 0xFFFF);			/* prend les 2 octet de droite					*/
+	high = (sum >> 16);				/* prend les 2 octet de gauche					*/
+	sum = high + low;				/* aditionne le tout							*/
+	return ((unsigned short)~sum);	/* inverse les bits actif et cast en unsigned	*/
 }
 
+/*
+** retourne le temps actuel en millisecondes
+*/
 long		get_current_time_millis()
 {
 	struct timeval time_v;
@@ -62,6 +72,9 @@ long		get_current_time_millis()
 	return (time_v.tv_usec);
 }
 
+/*
+** read le message icmp header-packet
+*/
 int			wait_message(t_ping *ping, t_packet_received *packet_r)
 {
 	int	ret;
@@ -82,35 +95,35 @@ void		test(t_ping *ping)
 {
 	int i = 1;
 	int sequence = 0;
-	t_packet packet;
 	long start;
 	int ret;
 	t_packet_received *packet_r;
 
 	while(42)
 	{
-		start = get_current_time_millis();
+		t_packet packet;
+
 		ft_bzero(&packet, sizeof(packet));
 		packet.header.type = ICMP_ECHO;
 		packet.header.un.echo.id = ping->pid;
 		for (i = 0; i < (int)sizeof(packet.msg) - 1; i++)
 			packet.msg[i] = i + '0';
 		packet.msg[i] = 0;
-		packet.header.un.echo.sequence = sequence++;
+		packet.header.un.echo.sequence = sequence;
 		packet.header.checksum = checksum(&packet, sizeof(packet));
-		if (sendto(ping->sock, &packet, sizeof(packet), 0, (struct sockaddr*)&ping->addr, sizeof(ping->addr)) <= 0 )
-			perror("sendto");
-		
+		start = get_current_time_millis();
+		if (sendto(ping->sock, &packet, sizeof(packet), 0, (struct sockaddr*)&ping->addr, sizeof(ping->addr)) <= 0)
+			printf("error to send");
 		packet_r = prepare_packet_receiver(ping, 5000);
-		
 		ret = wait_message(ping, packet_r);
 		if (ret == MESSAGE_RECEIVED_SUCCES || ret == MESSAGE_RECEIVED_TRUC)
-			printf("%d bytes from %s: icmp_seq=%d time=0.%3ld ms\n", (int)sizeof(packet.msg), inet_ntoa(ping->addr.sin_addr), sequence, get_current_time_millis() - start);
+			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n", (int)sizeof(packet.msg), inet_ntoa(ping->addr.sin_addr), sequence, ping->ttl, ((float)(get_current_time_millis() - start)) / 1000);
 		else
 			printf("Request timeout for icmp_seq %d\n", sequence);
 		//printf("msg : %s\n", packet_r->msg);
 		destruct_packet_receiver(packet_r);
 		sleep(1);
+		sequence++;
 	}
 }
 
@@ -130,7 +143,7 @@ int	main(int argc, char **argv)
 		if (ping->hname)
 		{
 			icmp_initialize_connection(ping, ping->ttl);
-			printf("PING %s (%s):\n", ping->shost, inet_ntoa(ping->addr.sin_addr));
+			printf("PING %s (%s): %lu data bytes\n", ping->shost, inet_ntoa(ping->addr.sin_addr), 64 - ICMP_HEADER_SIZE);
 			test(ping);
 		}
 		destruct_ping(ping);
