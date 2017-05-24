@@ -69,7 +69,6 @@ void		test(t_ping *ping)
 	t_packet packet;
 	struct sockaddr_in r_addr;
 
-	printf("PING %s (%s):\n", ping->shost, inet_ntoa(ping->addr.sin_addr));
 	for (;;) {
 		long start;
 		
@@ -79,7 +78,7 @@ void		test(t_ping *ping)
         
         if (recvfrom(ping->sock, &packet, sizeof(packet), 0, (struct sockaddr*)&r_addr, &len) > 0)
 		{
-			printf("64 bytes from %s: icmp_seq=%d time=%1.3ld\n", inet_ntoa(ping->addr.sin_addr), sequence, get_current_time_millis() - start);
+			printf("%d bytes from %s: icmp_seq=%d time=0.%1.3ld ms\n", (int)sizeof(packet.msg), inet_ntoa(ping->addr.sin_addr), sequence, get_current_time_millis() - start);
 		}
 		else
 		{
@@ -113,6 +112,7 @@ int	main(int argc, char **argv)
 		ping->pid = getpid();
 		if (ping->hname)
 		{
+			printf("PING %s (%s):\n", ping->shost, inet_ntoa(ping->addr.sin_addr));
 			icmp_initialize_connection(ping);
 			test(ping);
 		}

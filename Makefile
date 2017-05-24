@@ -10,15 +10,15 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME		=	ft_p
+STUDENT		=	jguyet
 
 PROG1		=	ft_ping
 
-NAMEBASE    =   $(shell basename $(NAME) .a)
+NAMEBASE    =   $(shell basename $(PROG1) .a)
 
 LENGTHNAME	=	`printf "%s" $(NAMEBASE) | wc -c`
 
-MAX_COLS	=	$$(echo "$$(tput cols)-20-$(LENGTHNAME)"|bc)
+MAX_COLS	=	$$(echo "$$(tput cols)-21-$(LENGTHNAME)"|bc)
 
 CC			=	gcc
 
@@ -49,16 +49,18 @@ all:
 	if test -f $(PROG1) ; then																\
 		echo "make: Nothing to be done for \`all\`.";										\
 	else																					\
-		$(MAKE) -j $(NAME);																	\
+		$(MAKE) -j $(STUDENT);																\
 	fi
 
-$(NAME):
+$(STUDENT):
 	make -C $(LIBFTDIR)
 	$(MAKE) $(PROG1)
 
 $(PROG1):	$(OBJDIR) $(OBJSPROG1)
 	$(CC) $(FLAGS) -o $(PROG1) $(OBJSPROG1) -L $(LIBFTDIR) -lftprintf
-	echo "MAKE   [$(PROG1)]"
+	echo "MAKE    [$(PROG1)]"
+	echo "\033[38;5;227mAUTHOR  :\033[0m"
+	cat auteur
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
@@ -67,34 +69,28 @@ $(OBJDIR):
 $(OBJDIR)%.o : $(SRCDIR)%.c | $(OBJDIR)
 	$(CC) $(FLAGS) -MMD -c $< -o $@															\
 		-I $(INCDIR) -I $(INCDIRLIBFT)
-	printf "\r\033[38;5;117m%s%*.*s\033[0m\033[K"											\
-	"MAKE   "$(NAMEBASE)" plz wait ..."														\
-		$(MAX_COLS) $(MAX_COLS) "($(@)))"
+	printf "\r\033[38;5;117m%s\033[38;5;092m%*.*s\033[0m\033[K"											\
+	"MAKE    "$(NAMEBASE)" plz wait ..."	$(MAX_COLS)	$(MAX_COLS)	"[$(@)]"
 
 clean:
-	if [[ `rm -R $(OBJDIR) &> /dev/null 2>&1; echo $$?` == "0" ]]; then						\
-		echo -en "\r\033[38;5;101mCLEAN  "													\
-		"[\033[0m$(NAMEBASE)\033[38;5;101m]\033[K";											\
-	else																					\
-		printf "\r";																		\
+	if [[ `rm -R $(OBJDIR) &> /dev/null 2>&1; echo $$?` == "0" ]]; then		\
+		echo -en "\r\033[38;5;101mCLEAN  "									\
+		"[\033[0m$(NAMEBASE)\033[38;5;101m]\033[K";							\
+	else																	\
+		printf "\r";														\
 	fi
-	make -C $(LIBFTDIR) fclean
+	make -C $(LIBFTDIR) clean
 
-fclean:		clean
-	if [[ `rm $(NAME) &> /dev/null 2>&1; echo $$?` == "0" ]]; then							\
-		echo -en "\r\033[38;5;124mFCLEAN "													\
-		"[\033[0m$(NAMEBASE)\033[38;5;124m]\033[K";											\
-	else																					\
-		printf "\r";																		\
+fclean:
+	if [[ `rm $(PROG1) &> /dev/null 2>&1; echo $$?` == "0" ]]; then			\
+		echo -en "\r\033[38;5;124mFCLEAN "									\
+		"[\033[0m$(NAMEBASE)\033[38;5;124m]\033[K";							\
+	else																	\
+		printf "\r";														\
 	fi
-	make -C $(LIBFTDIR) fclean
-	rm -rf $(PROG1)
 	rm -rf $(OBJDIR)
+	make -C $(LIBFTDIR) fclean
 
 re:			fclean all
-
-.PHONY:		fclean clean re
-
--include $(OBJS:.o=.d)
 
 .PHONY: all clean fclean re

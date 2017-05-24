@@ -16,7 +16,7 @@ NAMEBASE    =   $(shell basename $(NAME) .a)
 
 LENGTHNAME	=	`printf "%s" $(NAMEBASE) | wc -c`
 
-MAX_COLS	=	$$(echo "$$(tput cols)-20-$(LENGTHNAME)"|bc)
+MAX_COLS	=	$$(echo "$$(tput cols)-21-$(LENGTHNAME)"|bc)
 
 CC			=	gcc
 
@@ -177,7 +177,7 @@ all:
 $(NAME):	$(OBJDIR) $(OBJS)
 	ar rc $(NAME) $(OBJS)
 	ranlib $(NAME)
-	echo "MAKE   [$(NAMEBASE)]"
+	echo "MAKE    [$(NAMEBASE)]"
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
@@ -186,9 +186,9 @@ $(OBJDIR):
 $(OBJDIR)%.o : $(SRCDIR)%.c | $(OBJDIR)
 	$(CC) $(FLAGS) -MMD -c $< -o $@											\
 		-I $(INCDIR)
-	printf "\r\033[38;5;117m%s%*.*s\033[0m\033[K"							\
-	"MAKE   "$(NAMEBASE)" plz wait ..."										\
-		$(MAX_COLS) $(MAX_COLS) "($(@)))"
+	printf "\r\033[38;5;117m%s\033[38;5;092m%*.*s\033[0m\033[K"							\
+	"MAKE    "$(NAMEBASE)" plz wait ..."									\
+		$(MAX_COLS) $(MAX_COLS) "[$(@)]"
 
 clean:
 	if [[ `rm -R $(OBJDIR) &> /dev/null 2>&1; echo $$?` == "0" ]]; then		\
@@ -198,13 +198,14 @@ clean:
 		printf "\r";														\
 	fi
 
-fclean:		clean
+fclean:
 	if [[ `rm $(NAME) &> /dev/null 2>&1; echo $$?` == "0" ]]; then			\
 		echo -en "\r\033[38;5;124mFCLEAN "									\
 		"[\033[0m$(NAMEBASE)\033[38;5;124m]\033[K";							\
 	else																	\
 		printf "\r";														\
 	fi
+	rm -rf $(OBJDIR)
 
 re:			fclean all
 
