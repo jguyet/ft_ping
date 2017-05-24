@@ -12,24 +12,34 @@
 
 #include "ft_ping.h"
 
-t_packet_received		*prepare_packet_receiver(size_t size)
+t_packet_received		*prepare_packet_receiver(t_ping *ping, size_t size)
 {
 	t_packet_received		*packet;
-	struct iovec			iov[1];
-	char					*buffer;
-	struct sockaddr_storage	src_addr;
+	//char					*buffer;
+	char					buffer[5000];
 
-	if (!(packet= (t_packet_received*)malloc(sizeof(t_packet_received))))
+	(void)size;
+	if (!(packet = (t_packet_received*)malloc(sizeof(t_packet_received))))
 		return (NULL);
-	if (!(buffer = ft_strnew(size)))
-		return (NULL);
-	iov[0].iov_base = buffer;
-	iov[0].iov_len = sizeof(buffer);
-	packet->header.msg_name = &src_addr;
-	packet->header.msg_namelen = sizeof(src_addr);
-	packet->header.msg_iov = iov;
+	//if (!(packet->header = (struct msghdr*)malloc(sizeof(struct msghdr))))
+	//	return (NULL);
+	//if (!(buffer = ft_strnew(size)))
+	//	return (NULL);
+	packet->iov[0].iov_base = &buffer;
+	packet->iov[0].iov_len = sizeof(buffer);
+	packet->header.msg_name = (void*)&ping->addr;
+	packet->header.msg_namelen = sizeof(ping->addr);
+	packet->header.msg_iov = packet->iov;
 	packet->header.msg_iovlen = 1;
 	packet->header.msg_control = 0;
 	packet->header.msg_controllen = 0;
+	//packet->msg = &buffer;
 	return (packet);
+}
+
+void					destruct_packet_receiver(t_packet_received *packet)
+{
+	//if (packet->msg != NULL)
+	//	ft_strdel(&packet->msg);
+	free(packet);
 }

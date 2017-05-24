@@ -129,10 +129,10 @@ typedef struct 				s_packet
 typedef struct				s_packet_received
 {
 	struct msghdr			header;				/* header of message received	*/
-	struct iovec			*iov_buffers;		/* container of messages 		*/
+	struct iovec			iov_buffers;		/* container of messages 		*/
+	char					*msg;
+	struct iovec			iov[1];
 }							t_packet_received;
-
-t_packet_received			*prepare_packet_receiver(size_t size);
 
 /*
 ** ping struct
@@ -148,5 +148,12 @@ typedef struct				s_ping
 }							t_ping;
 
 BOOLEAN						icmp_initialize_connection(t_ping *ping);
+
+t_packet_received			*prepare_packet_receiver(t_ping *ping, size_t size);
+void						destruct_packet_receiver(t_packet_received *packet);
+
+# define MESSAGE_RECEIVED_TRUC		0
+# define MESSAGE_RECEIVED_SUCCES	1
+# define MESSAGE_RECEIVED_ERROR		-1
 
 #endif

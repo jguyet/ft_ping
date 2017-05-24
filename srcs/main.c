@@ -62,30 +62,90 @@ long		get_current_time_millis()
 	return (time_v.tv_usec);
 }
 
+int update_buffer(struct msghdr* msg, size_t bytes) {
+  while (msg->msg_iovlen > 0) {
+    if (bytes < msg->msg_iov[0].iov_len) {
+      msg->msg_iov[0].iov_len -= bytes;
+      msg->msg_iov[0].iov_base += bytes;
+      return 1;
+    }
+    bytes -= msg->msg_iov[0].iov_len;
+    ++msg->msg_iov;
+    --msg->msg_iovlen;
+  }
+  return 0;
+}
+
+int			wait_message(t_ping *ping, t_packet_received *packet_r)
+{
+	char buffer[5000];
+	struct iovec iov[1];                       /* Data array */
+	struct msghdr msg;                      /* Message header */
+	//struct cmsghdr *cmsg;                   /* Control related data */
+	//struct sock_extended_err *sock_err;     /* Struct describing the error */ 
+	//struct icmphdr icmph;                   /* ICMP header */
+	//struct sockaddr_in remote;              /* Our socket */
+
+	(void)packet_r;
+	ft_bzero(buffer, 5000);
+	iov[0].iov_base = &buffer;
+    iov[0].iov_len = sizeof(buffer);
+    msg.msg_name = (void*)&ping->addr;
+    msg.msg_namelen = sizeof(ping->addr);
+    msg.msg_iov = iov;
+    msg.msg_iovlen = 1;
+    msg.msg_flags = 0;
+    msg.msg_control = 0;//buffer;
+    msg.msg_controllen = 0;//sizeof(buffer);
+
+    int ret;
+	if ((ret = recvmsg(ping->sock, &msg, 0)) != -1)
+	{
+		if (msg.msg_flags & MSG_TRUNC)
+		{
+			printf("MSG_TRUNC ret : %d\n", ret);
+			printf("msg : %s\n", buffer);
+			return (MESSAGE_RECEIVED_TRUC);
+		}
+		printf("msg : %s\n", buffer);
+		return (MESSAGE_RECEIVED_SUCCES);
+	}
+	printf("ret1 : %d\n", ret);
+	return (MESSAGE_RECEIVED_ERROR);
+}
+
+int			wait_message_two(t_ping *ping, t_packet_received *packet_r)
+{
+    int ret;
+
+	if ((ret = recvmsg(ping->sock, &packet_r->header, 0)) != -1)
+	{
+		if (packet_r->header.msg_flags & MSG_TRUNC)
+		{
+			printf("MSG_TRUNC ret : %d\n", ret);
+			return (MESSAGE_RECEIVED_TRUC);
+		}
+		printf("msg : %s\n", packet_r->iov[0].iov_base);
+		return (MESSAGE_RECEIVED_SUCCES);
+	}
+	printf("ret1 : %d\n", ret);
+	return (MESSAGE_RECEIVED_ERROR);
+}
+
 void		test(t_ping *ping)
 {
 	int i = 1;
 	int sequence = 0;
 	t_packet packet;
-	//struct sockaddr_in r_addr;
+	long start;
+	int ret;
+	t_packet_received *packet_r;
 
-	for (;;) {
-		long start;
-		
+	//packet_r = prepare_packet_receiver(&ping->addr, 400);
+	//wait_message(ping);
+	while(42)
+	{
 		start = get_current_time_millis();
-        //socklen_t len = sizeof(r_addr);
-
-        t_packet_received *packet_r = prepare_packet_receiver(500);
-        
-        //if (recvfrom(ping->sock, &packet, sizeof(packet), 0, (struct sockaddr*)&r_addr, &len) > 0)
-		if (recvmsg(ping->sock, &packet_r->header, 0))
-		{
-			printf("%d bytes from %s: icmp_seq=%d time=0.%1.3ld ms\n", (int)sizeof(packet.msg), inet_ntoa(ping->addr.sin_addr), sequence, get_current_time_millis() - start);
-		}
-		else
-		{
-			printf("Request timeout for icmp_seq %d\n", sequence);
-		}
 		ft_bzero(&packet, sizeof(packet));
 		packet.header.type = ICMP_ECHO;
 		packet.header.un.echo.id = ping->pid;
@@ -96,6 +156,16 @@ void		test(t_ping *ping)
 		packet.header.checksum = checksum(&packet, sizeof(packet));
 		if (sendto(ping->sock, &packet, sizeof(packet), 0, (struct sockaddr*)&ping->addr, sizeof(ping->addr)) <= 0 )
 			perror("sendto");
+		
+		packet_r = prepare_packet_receiver(ping, 5000);
+		
+		ret = wait_message_two(ping, packet_r);
+		if (ret == MESSAGE_RECEIVED_SUCCES || ret == MESSAGE_RECEIVED_TRUC)
+			printf("%d bytes from %s: icmp_seq=%d time=0.%3ld ms\n", (int)sizeof(packet.msg), inet_ntoa(ping->addr.sin_addr), sequence, get_current_time_millis() - start);
+		else
+			printf("Request timeout for icmp_seq %d\n", sequence);
+		//printf("msg : %s\n", packet_r->msg);
+		//destruct_packet_receiver(packet_r);
 		sleep(1);
     }
 }
@@ -114,8 +184,8 @@ int	main(int argc, char **argv)
 		ping->pid = getpid();
 		if (ping->hname)
 		{
-			printf("PING %s (%s):\n", ping->shost, inet_ntoa(ping->addr.sin_addr));
 			icmp_initialize_connection(ping);
+			printf("PING %s (%s):\n", ping->shost, inet_ntoa(ping->addr.sin_addr));
 			test(ping);
 		}
 		destruct_ping(ping);
