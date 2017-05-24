@@ -32,7 +32,7 @@ BOOLEAN		icmp_initialize_connection(t_ping *ping)
 
 	val = 255;
 	ping->sock = socket(PROT_INTERNET_IPV4,\
-		BINARY_UDP_SOCK_FLUX, ICMP_PROTOCOL);//test comme ca deja
+		SOCK_RAW, ICMP_PROTOCOL);//test comme ca deja
 	if (!socket_connection_is_estabilised(ping->sock))
 		return (false);
 	if (setsockopt(ping->sock, 0, IP_TTL, &val, sizeof(val)) != 0)
