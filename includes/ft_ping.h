@@ -82,38 +82,52 @@ typedef	unsigned long		u_long;
 */
 struct icmphdr
 {
-	u_char 					type;		/* message type		*/
-	u_char 					code;		/* type sub-code	*/
-	u_short 				checksum;	/* sum of msglength	*/
+	u_char					type;		/* message type		*/
+	u_char					code;		/* type sub-code	*/
+	u_short					checksum;	/* sum of msglength	*/
 	union
 	{
 		struct
 		{
-			u_short			id;
+			u_short			id;			/* current processid*/
 			u_short			sequence;	/* sequence id		*/
 		}					echo;		/* echo datagram	*/
 		unsigned int		gateway;	/* gateway address	*/
 	}						un;			/* union			*/
 };
 
+struct iphdr {
+        u_char  verhdrlen;
+        u_char  service;
+       u_short len;
+       u_short ident;
+        u_short frags;
+        u_char  ttl;
+        u_char  protocol;
+         u_short chksum;
+        struct in_addr src;
+         struct in_addr dest;
+};
+
 /*
 ** ICMP MESSAGE TYPES
 */
-#define ICMP_ECHOREPLY		0	/* Echo Reply			    */
-#define ICMP_DEST_UNREACH	3	/* Destination Unreachable	*/
-#define ICMP_SOURCE_QUENCH	4	/* Source Quench			*/
-#define ICMP_REDIRECT		5	/* Redirect (change route)	*/
-#define ICMP_ECHO			8	/* Echo Request				*/
-#define ICMP_TIME_EXCEEDED	11	/* Time Exceeded			*/
-#define ICMP_PARAMETERPROB	12	/* Parameter Problem		*/
-#define ICMP_TIMESTAMP		13	/* Timestamp Request		*/
-#define ICMP_TIMESTAMPREPLY	14	/* Timestamp Reply			*/
-#define ICMP_INFO_REQUEST	15	/* Information Request		*/
-#define ICMP_INFO_REPLY		16	/* Information Reply		*/
-#define ICMP_ADDRESS		17	/* Address Mask Request		*/
-#define ICMP_ADDRESSREPLY	18	/* Address Mask Reply		*/
-#define NR_ICMP_TYPES		18
+# define ICMP_ECHOREPLY		0	/* Echo Reply			    */
+# define ICMP_DEST_UNREACH	3	/* Destination Unreachable	*/
+# define ICMP_SOURCE_QUENCH	4	/* Source Quench			*/
+# define ICMP_REDIRECT		5	/* Redirect (change route)	*/
+# define ICMP_ECHO			8	/* Echo Request				*/
+# define ICMP_TIME_EXCEEDED	11	/* Time Exceeded			*/
+# define ICMP_PARAMETERPROB	12	/* Parameter Problem		*/
+# define ICMP_TIMESTAMP		13	/* Timestamp Request		*/
+# define ICMP_TIMESTAMPREPLY 14	/* Timestamp Reply			*/
+# define ICMP_INFO_REQUEST	15	/* Information Request		*/
+# define ICMP_INFO_REPLY	16	/* Information Reply		*/
+# define ICMP_ADDRESS		17	/* Address Mask Request		*/
+# define ICMP_ADDRESSREPLY	18	/* Address Mask Reply		*/
+# define NR_ICMP_TYPES		18
 
+#define ICMP_MINLEN			28
 
 /*
 ** Changes the default value set by the TCP/IP service provider in the
@@ -129,40 +143,65 @@ struct icmphdr
 ** icmp packet struct
 */
 # define ICMP_HEADER_SIZE	sizeof(struct icmphdr)
-# define PACKET_X64 		(72 - ICMP_HEADER_SIZE)
+# define PACKET_X64 		(64 - ICMP_HEADER_SIZE)
 
-typedef struct 				s_packet
+typedef struct				s_packet
 {
-	struct icmphdr			header;				/* header of message send 	*/
-	char 					msg[PACKET_X64];	/* content of message		*/
+	struct icmphdr			header;			/* header of message send 	*/
+	char 					msg[PACKET_X64];/* content of message		*/
 }							t_packet;
 
 typedef struct				s_packet_received
 {
-	struct msghdr			header;				/* header of message received	*/
-	struct iovec			iov_buffers;		/* container of messages 		*/
+	struct msghdr			header;		/* header of message received	*/
+	struct iovec			iov_buffers;/* container of messages 		*/
 	char					*msg;
 	struct iovec			iov[1];
 }							t_packet_received;
+
+typedef struct				s_flag
+{
+	BOOLEAN					actif;
+	char					*name;
+	BOOLEAN					special;
+	char					*help;
+	char					*value;
+	int						type;
+	char					*error;
+}							t_flag;
+
+# define FLAGS_SIZE			5
 
 /*
 ** ping struct
 */
 typedef struct				s_ping
 {
-	char					*shost;					/* string hostargs			*/
-	int						port;					/* port of connection		*/
-	struct hostent			*hname;					/* hostname					*/
-	int						sock;					/* socket descriptor ID		*/
-	struct sockaddr_in		addr;					/* sockaddr of destination	*/
-	int						pid;					/* pid of current program	*/
+	char					*shost;		/* string hostargs			*/
+	int						port;		/* port of connection		*/
+	struct hostent			*hname;		/* hostname					*/
+	int						sock;		/* socket descriptor ID		*/
+	struct sockaddr_in		addr;		/* sockaddr of destination	*/
+	int						pid;		/* pid of current program	*/
 	int						ttl;
+	int						sequence;
+	int						received;
+	int						datalen;
+	t_flag					**flags;
+	BOOLEAN					(*launch)();
 }							t_ping;
+
+# define F_VERBOSE			ping->flags[0]->actif
+
+BOOLEAN						load_flags(t_ping *ping, int argc, char **argv);
 
 BOOLEAN						icmp_initialize_connection(t_ping *ping, int ttl);
 
 t_packet_received			*prepare_packet_receiver(t_ping *ping, size_t size);
 void						destruct_packet_receiver(t_packet_received *packet);
+
+BOOLEAN						start_ping(t_ping *ping);
+t_ping						*singleton_ping(void);
 
 # define MESSAGE_RECEIVED_TRUC		0
 # define MESSAGE_RECEIVED_SUCCES	1

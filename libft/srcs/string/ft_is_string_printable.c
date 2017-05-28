@@ -12,7 +12,7 @@
 
 #include "libft.h"
 
-int	ft_is_string_printable(char *str)
+BOOLEAN	ft_is_string_printable(char *str)
 {
 	int	i;
 
@@ -20,8 +20,8 @@ int	ft_is_string_printable(char *str)
 	while (str[i])
 	{
 		if (!ft_isprint(str[i]))
-			return (0);
+			return (false);
 		i++;
 	}
-	return (1);
+	return (true);
 }

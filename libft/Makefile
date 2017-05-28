@@ -116,6 +116,7 @@ SRCBASE		=	\
 				string/ft_replace.c							\
 				string/ft_strdelandnew.c					\
 				string/ft_is_string_printable.c				\
+				string/ft_is_string_numeric.c				\
 				string/ft_strcontains.c 					\
 				printf/add/add_char.c						\
 				printf/add/add_int.c						\

@@ -15,9 +15,21 @@
 
 void	ctrlc(int i)
 {
+	t_ping	*ping;
+	int		packets;
+	int		received;
+	int		loss;
+
 	if (i == SIGINT)
 	{
+		ping = singleton_ping();
+		packets = ping->sequence;
+		received = ping->received;
+		loss = 100 * (packets - received) / packets;
+		printf("\n--- %s ping statistics ---\n", ping->shost);
+		printf("%d  packets transmitted, %d  packets received, %.1f%% packet loss\n", packets, received, ((float)loss));
 
+		exit(0);
 	}
 }
 
@@ -34,5 +46,13 @@ void	ctrlq(int i)
 	if (i == SIGQUIT)
 	{
 
+	}
+}
+
+void	sig_alarm(int i)
+{
+	if (i == SIGALRM)
+	{
+		g_breakflag = 1;
 	}
 }

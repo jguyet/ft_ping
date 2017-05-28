@@ -18,7 +18,9 @@
 void	ctrlc(int i);
 void	ctrlz(int i);
 void	ctrlq(int i);
+void	sig_alarm(int i);
 
 int		g_sig;
+int		g_breakflag;
 
 #endif

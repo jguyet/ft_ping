@@ -36,6 +36,7 @@ INCDIRLIBFT	=	$(LIBFTDIR)/includes/
 
 SRCSPROG1	=	\
 				srcs/main.c																	\
+				srcs/flags.c																\
 				srcs/signals/signals.c														\
 				srcs/network/protocol/icmp_open_connection.c								\
 				srcs/network/protocol/icmp_message.c
@@ -70,18 +71,18 @@ $(OBJDIR):
 $(OBJDIR)%.o : $(SRCDIR)%.c | $(OBJDIR)
 	$(CC) $(FLAGS) -MMD -c $< -o $@															\
 		-I $(INCDIR) -I $(INCDIRLIBFT)
-	printf "\r\033[38;5;117m%s\033[38;5;092m%*.*s\033[0m\033[K"											\
+	printf "\r\033[38;5;117m%s\033[38;5;092m%*.*s\033[0m\033[K"								\
 	"MAKE    "$(NAMEBASE)" plz wait ..."	$(MAX_COLS)	$(MAX_COLS)	"[$(@)]"
 
 clean:
-	echo -en "\r\033[38;5;101mCLEAN  "										\
-		"[\033[0m$(NAMEBASE)\033[38;5;101m]\033[K";							\
+	echo -en "\r\033[38;5;101mCLEAN  "														\
+		"[\033[0m$(NAMEBASE)\033[38;5;101m]\033[K";											\
 	rm -rf $(OBJDIR)
 	make -C $(LIBFTDIR) clean
 
 fclean:
-	echo -en "\r\033[38;5;124mFCLEAN "										\
-		"[\033[0m$(NAMEBASE)\033[38;5;124m]\033[K";							\
+	echo -en "\r\033[38;5;124mFCLEAN "														\
+		"[\033[0m$(NAMEBASE)\033[38;5;124m]\033[K";											\
 	rm -rf $(PROG1)
 	rm -rf $(OBJDIR)
 	make -C $(LIBFTDIR) fclean
