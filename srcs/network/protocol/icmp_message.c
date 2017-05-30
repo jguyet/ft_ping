@@ -15,7 +15,7 @@
 t_packet_received		*prepare_packet_receiver(t_ping *ping, size_t size)
 {
 	t_packet_received		*packet;
-	char					buffer[size];
+	char					buffer[size + sizeof(t_packet_received)];
 
 	if (!(packet = (t_packet_received*)malloc(sizeof(t_packet_received))))
 		return (NULL);

@@ -36,20 +36,27 @@ BOOLEAN			icmp_handle_message(t_ping *ping, t_packet_received *packet)
 
 BOOLEAN		icmp_process_received_packet(int readed, t_ping *ping, struct iphdr *ip, t_packet_received *packet)
 {
+	int time_of;
+
+	time_of = (get_current_time_millis() - ping->start_time);
 	(void)packet;
-	if (readed < ping->datalen + ICMP_MINLEN)
+	if (readed < (int)(ping->sweepminsize + sizeof(struct iphdr) + sizeof(struct icmphdr)))
 	{
 		if (F_VERBOSE)
 			ft_fprintf(1, "ft_ping: packet too short (%d bytes) from %s\n", readed, inet_ntoa(ip->src));
+		ping->received++;
 		return (true);
 	}
 	readed -= sizeof(struct iphdr);
 	if (readed != -1)
 	{
 		printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n",\
-			readed, inet_ntoa(ip->src),\
-			ping->sequence, ip->ttl,\
-			((float)(get_current_time_millis() - ping->start_time)) / 1000);
+			readed, inet_ntoa(ip->src), ping->sequence, ip->ttl, ((float)(time_of) / 1000));
+		ping->totaltime += time_of;
+		if (ping->mintime == 0 || ping->mintime > time_of)
+			ping->mintime = time_of;
+		if (ping->maxtime == 0 || ping->maxtime < time_of)
+			ping->maxtime = time_of;
 		ping->received++;
 	}
 	else

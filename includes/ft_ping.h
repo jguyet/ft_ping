@@ -211,20 +211,32 @@ typedef struct				s_ping
 	int						sequence;	/* sequence id  				*/
 	int						received;	/* total received messages  	*/
 	int						send;		/* total sended messages  		*/
-	int						datalen;	/* total data octet outofHead 	*/
+	int						sweepmaxsize;
+	int						sweepminsize;
+	int						sweepincrsize;
 	t_flag					**flags;	/* map of flags					*/
 	BOOLEAN					(*launch)();/* pointer of function launch	*/
 	long					start_time;	/* timer						*/
+	struct timeval			timeout;	/* timeout						*/
+	int						mintime;	/* mintime						*/
+	long					totaltime;	/* medium time					*/
+	int						maxtime;	/* maxtime						*/
 }							t_ping;
 
 # define F_VERBOSE			ping->flags[0]->actif
+# define F_SWEEPMAX			ping->flags[1]->actif
+# define F_SWEEPMIN			ping->flags[2]->actif
+# define F_INCREMENT		ping->flags[3]->actif
 
 BOOLEAN						load_flags(t_ping *ping, int argc, char **argv);
-
+void						load_flag_list(t_ping *ping);
 BOOLEAN						icmp_initialize_connection(t_ping *ping, int ttl);
+BOOLEAN						set_flags_values(t_ping *ping);
 
 BOOLEAN						start_ping(t_ping *ping);
 t_ping						*singleton_ping(void);
+
+void						ping_result(void);
 
 /*
 ** Messages

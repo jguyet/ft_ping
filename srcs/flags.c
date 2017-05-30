@@ -146,3 +146,29 @@ BOOLEAN			load_flags(t_ping *ping, int argc, char **argv)
 	}
 	return (true);
 }
+
+static t_flag	*newflag(t_flag *f)
+{
+	t_flag *n;
+
+	n = malloc(sizeof(t_flag));
+	n->actif = f->actif;
+	n->name = ft_strdup(f->name);
+	n->special = f->special;
+	n->help = ft_strdup(f->help);
+	n->value = NULL;
+	n->type = f->type;
+	n->error = ft_strdup(f->error);
+	return (n);
+}
+
+void			load_flag_list(t_ping *ping)
+{
+	ping->flags = malloc(sizeof(t_flag) * FLAGS_SIZE);
+	ping->flags[0] = newflag(&(t_flag){false, "v", false, NULL, NULL, 0, NULL});
+	ping->flags[1] = newflag(&(t_flag){false, "G", true, "[-G sweepmaxsize]", NULL, 1, "invalid packet size: `%s'"});
+	ping->flags[2] = newflag(&(t_flag){false, "g", true, "[-g sweepminsize]", NULL, 1, "invalid packet size: `%s'"});
+	ping->flags[3] = newflag(&(t_flag){false, "h", true, "[-h sweepincrsize]", NULL, 1 , "invalid increment size: `%s'"});
+	ping->flags[4] = newflag(&(t_flag){false, "m", true, "[-m ttl]", NULL, 1, "invalid TTL: `%s'"});
+	ping->flags[5] = newflag(&(t_flag){false, "t", true, "[-t timeout]", NULL, 1, "invalid timeout: `%s'"});
+}

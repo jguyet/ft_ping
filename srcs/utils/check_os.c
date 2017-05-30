@@ -1,27 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   sig.h                                              :+:      :+:    :+:   */
+/*   check_os.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jguyet <jguyet@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/03/21 15:41:35 by jguyet            #+#    #+#             */
-/*   Updated: 2017/03/21 15:41:36 by jguyet           ###   ########.fr       */
+/*   Created: 2017/05/30 07:19:20 by jguyet            #+#    #+#             */
+/*   Updated: 2017/05/30 07:19:22 by jguyet           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SIG_H
-# define SIG_H
+#include "ft_ping.h"
 
-# include <signal.h>
-
-void	ctrlc(int i);
-void	ctrlz(int i);
-void	ctrlq(int i);
-void	sig_alarm(int i);
-void	ft_sleep(int t);
-
-int		g_sig;
-int		g_breakflag;
-
+void	check_os(void)
+{
+#ifdef __linux__
+	return ;
 #endif
+#ifdef __APPLE__
+	return ;
+#else
+	printf("ft_ping : is not posix.\n");
+	exit(0);
+#endif
+}

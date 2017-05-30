@@ -15,21 +15,9 @@
 
 void	ctrlc(int i)
 {
-	t_ping	*ping;
-	int		packets;
-	int		received;
-	int		loss;
-
 	if (i == SIGINT)
 	{
-		ping = singleton_ping();
-		packets = ping->send;
-		received = ping->received;
-		loss = 100 * (packets - received) / packets;
-		printf("\n--- %s ping statistics ---\n", ping->shost);
-		printf("%d  packets transmitted, %d  packets received, %.1f%% packet loss\n", packets, received, ((float)loss));
-
-		exit(0);
+		ping_result();
 	}
 }
 
@@ -55,4 +43,12 @@ void	sig_alarm(int i)
 	{
 		g_breakflag = 1;
 	}
+}
+
+void	ft_sleep(int t)
+{
+	alarm(t);
+	while(g_breakflag == 0)
+		;
+	g_breakflag = 0;
 }

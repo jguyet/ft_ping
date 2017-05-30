@@ -54,6 +54,8 @@ BOOLEAN			icmp_initialize_connection(t_ping *ping, int ttl)
 	if (setsockopt(ping->sock, SOL_SOCKET, SO_BROADCAST, (const char*)&opt, sizeof(opt)) != 0)
 		return (false);
 #endif
+	if (setsockopt(ping->sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&ping->timeout, sizeof(ping->timeout)) != 0)
+		return (false);
 	ft_bzero(&ping->addr, sizeof(ping->addr));
 	ping->addr.sin_family = PROT_INTERNET_IPV4;
 	ft_memcpy((char*)&ping->addr.sin_addr.s_addr,\

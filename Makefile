@@ -37,7 +37,10 @@ INCDIRLIBFT	=	$(LIBFTDIR)/includes/
 SRCSPROG1	=	\
 				srcs/main.c																	\
 				srcs/flags.c																\
+				srcs/ping_result.c															\
+				srcs/set_flags_values.c														\
 				srcs/signals/signals.c														\
+				srcs/utils/check_os.c														\
 				srcs/utils/get_current_time_millis.c										\
 				srcs/network/protocol/utils/sum.c											\
 				srcs/network/protocol/message/icmp_error_reception.c						\
