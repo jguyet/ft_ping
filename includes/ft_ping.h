@@ -168,19 +168,21 @@ typedef struct				s_packet_received
 {
 	struct msghdr			header;		/* header of message received	*/
 	struct iovec			iov_buffers;/* container of messages 		*/
-	char					*msg;
-	struct iovec			iov[1];
+	struct iovec			iov[1];		/* first container of messages 	*/
 }							t_packet_received;
 
+/*
+** Flags
+*/
 typedef struct				s_flag
 {
-	BOOLEAN					actif;
-	char					*name;
-	BOOLEAN					special;
-	char					*help;
-	char					*value;
-	int						type;
-	char					*error;
+	BOOLEAN					actif;		/* is actif flag				*/
+	char					*name;		/* name of flag					*/
+	BOOLEAN					special;	/* has special arguments		*/
+	char					*help;		/* text view on --help			*/
+	char					*value;		/* arguments					*/
+	int						type;		/* type of value				*/
+	char					*error;		/* error message				*/
 }							t_flag;
 
 # define FLAGS_SIZE			5
@@ -190,19 +192,20 @@ typedef struct				s_flag
 */
 typedef struct				s_ping
 {
-	char					*shost;		/* string hostargs			*/
-	int						port;		/* port of connection		*/
-	struct hostent			*hname;		/* hostname					*/
-	int						sock;		/* socket descriptor ID		*/
-	struct sockaddr_in		addr;		/* sockaddr of destination	*/
-	int						pid;		/* pid of current program	*/
-	int						ttl;
-	int						sequence;
-	int						received;
-	int						send;
-	int						datalen;
-	t_flag					**flags;
-	BOOLEAN					(*launch)();
+	char					*shost;		/* string hostargs				*/
+	int						port;		/* port of connection			*/
+	struct hostent			*hname;		/* hostname						*/
+	int						sock;		/* socket descriptor ID			*/
+	struct sockaddr_in		addr;		/* sockaddr of destination		*/
+	int						pid;		/* pid of current program		*/
+	int						ttl;		/* time to live  				*/
+	int						sequence;	/* sequence id  				*/
+	int						received;	/* total received messages  	*/
+	int						send;		/* total sended messages  		*/
+	int						datalen;	/* total data octet outofHead 	*/
+	t_flag					**flags;	/* map of flags					*/
+	BOOLEAN					(*launch)();/* pointer of function launch	*/
+	long					start_time;	/* timer						*/
 }							t_ping;
 
 # define F_VERBOSE			ping->flags[0]->actif
@@ -224,9 +227,18 @@ void						*prepare_packet_to_send(t_ping *ping, size_t size);
 void						destruct_packet_send(t_packet *packet);
 
 /*
+** Handler
+*/
+BOOLEAN						icmp_handle_message(t_ping *ping, t_packet_received *packet_r);
+BOOLEAN						icmp_process_received_packet(int readed, t_ping *ping, struct iphdr *ip, t_packet_received *packet);
+
+BOOLEAN						icmp_error_rcvmsg(void);
+
+/*
 ** Utils
 */
 unsigned short				checksum(void *b, int len);
+long						get_current_time_millis();
 
 # define MESSAGE_RECEIVED_TRUC		0
 # define MESSAGE_RECEIVED_SUCCES	1

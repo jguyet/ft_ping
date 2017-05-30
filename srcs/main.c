@@ -13,8 +13,6 @@
 #include "ft_ping.h"
 #include "sig.h"
 
-#include <sys/time.h>
-
 #include <arpa/inet.h>
 
 t_ping		*singleton_ping(void)
@@ -41,18 +39,6 @@ void		destruct_ping(t_ping *ping)
 	if (ping->shost != NULL)
 		ft_strdel(&ping->shost);
 	free(ping);
-}
-
-/*
-** retourne le temps actuel en millisecondes
-*/
-long		get_current_time_millis()
-{
-	struct timeval time_v;
-
-	if (gettimeofday(&time_v, NULL) == -1)
-		return (0);
-	return (time_v.tv_usec);
 }
 
 /*
@@ -115,9 +101,6 @@ void	unpack(t_ping *ping, t_packet_received *packet, int cc, long start)
 
 BOOLEAN		start_ping(t_ping *ping)
 {
-	long start;
-	int ret;
-
 	while (true)
 	{
 		t_packet_received *packet_r;
@@ -125,14 +108,13 @@ BOOLEAN		start_ping(t_ping *ping)
 
 		ping->send++;
 		packet = prepare_packet_to_send(ping, PACKET_X64);
-		start = get_current_time_millis();
+		ping->start_time = get_current_time_millis();
 		if (sendto(ping->sock, packet,\
 			sizeof(t_packet) + ping->datalen, MSG_DONTWAIT, (struct sockaddr*)&ping->addr,\
 			sizeof(ping->addr)) <= 0)
 			printf("error to send");
 		packet_r = prepare_packet_receiver(ping, 5000);
-		ret = wait_message(ping, packet_r);
-		unpack(ping, packet_r, ret, start);
+		icmp_handle_message(ping, packet_r);
 		destruct_packet_receiver(packet_r);
 		ping->sequence++;
 		ft_sleep(1);
