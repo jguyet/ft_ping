@@ -96,17 +96,27 @@ struct icmphdr
 	}						un;			/* union			*/
 };
 
-struct iphdr {
-        u_char  verhdrlen;
-        u_char  service;
-       u_short len;
-       u_short ident;
-        u_short frags;
-        u_char  ttl;
-        u_char  protocol;
-         u_short chksum;
-        struct in_addr src;
-         struct in_addr dest;
+struct iphdr
+{
+#if BYTE_ORDER == LITTLE_ENDIAN
+		u_char  hl:4,			/* header length */
+				version:4;		/* version */
+#endif
+#if BYTE_ORDER == BIG_ENDIAN
+		u_char  version:4,		/* version */
+				hl:4;			/* header length */
+#endif
+		u_char  service;		/* type of service */
+		u_short len;			/* total length */
+		u_short pid;			/* identification */
+		u_short off;			/* fragment offset field */
+#define	IP_DF 0x4000			/* dont fragment flag */
+#define	IP_MF 0x2000			/* more fragments flag */
+		u_char  ttl;			/* time to live */
+		u_char  protocol;		/* protocol */
+		u_short checksum;		/* checksum */
+		struct in_addr src;		/* source and dest address */
+		struct in_addr dest;	/* source and dest address */
 };
 
 /*
@@ -147,6 +157,7 @@ struct iphdr {
 
 typedef struct				s_packet
 {
+	struct iphdr			ip;
 	struct icmphdr			header;			/* header of message send 	*/
 	char 					msg[PACKET_X64];/* content of message		*/
 }							t_packet;
@@ -186,6 +197,7 @@ typedef struct				s_ping
 	int						ttl;
 	int						sequence;
 	int						received;
+	int						send;
 	int						datalen;
 	t_flag					**flags;
 	BOOLEAN					(*launch)();

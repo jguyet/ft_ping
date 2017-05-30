@@ -32,6 +32,7 @@ t_ping		*singleton_ping(void)
 	ping->launch = start_ping;
 	ping->received = 0;
 	ping->datalen = PACKET_X64;
+	ping->send = 0;
 	return (ping);
 }
 
@@ -107,6 +108,53 @@ void		ft_sleep(int t)
 	g_breakflag = 0;
 }
 
+void		prepare_iphdr(t_packet *packet, t_ping *ping)
+{
+	packet->ip.src.s_addr = INADDR_ANY;//ip local
+
+	if (!(inet_pton(AF_INET, ping->shost, &packet->ip.dest)))
+	{
+		printf("ft_ping: Can't set destination network address\n");
+		exit(EXIT_FAILURE);
+	}
+
+	packet->ip.ttl = 64;
+	packet->ip.protocol = IPPROTO_ICMP;
+	packet->ip.version = 4;//ipv4
+	packet->ip.hl = sizeof(struct iphdr) >> 2;
+	packet->ip.pid = ping->pid;
+	packet->ip.service = 0;
+	packet->ip.off = 0;
+	packet->ip.len = sizeof(packet);
+	packet->ip.checksum = 0;
+	packet->ip.checksum = checksum(&packet->ip, sizeof(struct iphdr));
+}
+
+void		prepare_header(t_packet *packet, t_ping *ping)
+{
+	packet->header.type = ICMP_ECHO;
+	packet->header.un.echo.id = ping->pid;
+	packet->header.un.echo.sequence = ping->sequence;
+	packet->header.checksum = 0;
+}
+
+t_packet	*pack(t_ping *ping)
+{
+	t_packet *packet;
+	int i = 0;
+
+	packet = (t_packet*)malloc(sizeof(t_packet));
+	ft_bzero(packet, sizeof(*packet));
+	prepare_iphdr(packet, ping);
+	prepare_header(packet, ping);
+	for (i = 0; i < (int)sizeof(packet->msg) - 1; i++)
+		packet->msg[i] = i + '0';
+	packet->msg[i] = 0;
+	packet->header.checksum = checksum(&packet->header, sizeof(struct icmphdr) + ping->datalen);
+	return (packet);
+}
+
+
 void	unpack(t_ping *ping, t_packet_received *packet, int cc, long start)
 {
 	struct iphdr	*ip;
@@ -117,16 +165,9 @@ void	unpack(t_ping *ping, t_packet_received *packet, int cc, long start)
 	{
 		if (F_VERBOSE)
 			ft_fprintf(1, "ft_ping: packet too short (%d bytes) from %s\n", cc, inet_ntoa(ip->src));
-		else if (F_VERBOSE == false)
-			ft_fprintf(1, "F_VERBOSE == false\n");
 		return ;
 	}
 	cc -= sizeof(*ip);
-	printf("ttl : %d\n", ip->ttl);
-	printf("len : %d\n", ip->len);
-	printf("cc : %d\n", cc);
-	printf("src : %s\n", inet_ntoa(ip->src));
-	printf("dest : %s\n", inet_ntoa(ip->dest));
 	if (cc != -1)
 	{
 		printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n",\
@@ -141,26 +182,19 @@ void	unpack(t_ping *ping, t_packet_received *packet, int cc, long start)
 
 BOOLEAN		start_ping(t_ping *ping)
 {
-	int i = 1;
 	long start;
 	int ret;
 
 	while (true)
 	{
 		t_packet_received *packet_r;
-		t_packet packet;
+		t_packet *packet;
 
-		ft_bzero(&packet, sizeof(packet));
-		packet.header.type = ICMP_ECHO;
-		packet.header.un.echo.id = ping->pid;
-		for (i = 0; i < (int)sizeof(packet.msg) - 1; i++)
-			packet.msg[i] = i + '0';
-		packet.msg[i] = 0;
-		packet.header.un.echo.sequence = ping->sequence;
-		packet.header.checksum = checksum(&packet, sizeof(packet));
+		ping->send++;
+		packet = pack(ping);
 		start = get_current_time_millis();
-		if (sendto(ping->sock, &packet,\
-			sizeof(packet), 0, (struct sockaddr*)&ping->addr,\
+		if (sendto(ping->sock, packet,\
+			sizeof(*packet), MSG_DONTWAIT, (struct sockaddr*)&ping->addr,\
 			sizeof(ping->addr)) <= 0)
 			printf("error to send");
 		packet_r = prepare_packet_receiver(ping, 5000);

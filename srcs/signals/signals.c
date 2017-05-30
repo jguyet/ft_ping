@@ -23,7 +23,7 @@ void	ctrlc(int i)
 	if (i == SIGINT)
 	{
 		ping = singleton_ping();
-		packets = ping->sequence;
+		packets = ping->send;
 		received = ping->received;
 		loss = 100 * (packets - received) / packets;
 		printf("\n--- %s ping statistics ---\n", ping->shost);

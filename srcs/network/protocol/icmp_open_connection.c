@@ -38,12 +38,21 @@ static BOOLEAN	socket_connection_is_estabilised(int fd)
 */
 BOOLEAN			icmp_initialize_connection(t_ping *ping, int ttl)
 {
-	ping->sock = socket(PROT_INTERNET_IPV4, NETWORK_FLUX, ICMP_PROTOCOL);
+	int opt;
+
+	opt = 1;
+
+	ping->sock = socket(PROT_INTERNET_IPV4, SOCK_RAW, ICMP_PROTOCOL);
 	if (!socket_connection_is_estabilised(ping->sock))
 		return (false);
 	if (setsockopt(ping->sock, 0, TCP_IP_PACKET_HEADER_SERVICE,\
 		&ttl, sizeof(ttl)) != 0)
 		return (false);
+	if ((setsockopt(ping->sock, IPPROTO_IP, IP_HDRINCL, &opt, sizeof(opt))) != 0)
+		return (false);
+	if (setsockopt(ping->sock, SOL_SOCKET, SO_BROADCAST, (const char*)&opt, sizeof(opt)) != 0)
+		return (false);
+
 	ft_bzero(&ping->addr, sizeof(ping->addr));
 	ping->addr.sin_family = PROT_INTERNET_IPV4;
 	ft_memcpy((char*)&ping->addr.sin_addr.s_addr,\
