@@ -163,6 +163,7 @@ struct iphdr
 ** icmp packet struct
 */
 # define ICMP_HEADER_SIZE	sizeof(struct icmphdr)
+# define IPHDR_SIZE 		sizeof(struct iphdr)
 # define PACKET_X64 		(64 - ICMP_HEADER_SIZE)
 
 typedef struct				s_packet

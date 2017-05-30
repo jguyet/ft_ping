@@ -40,10 +40,9 @@ BOOLEAN		icmp_process_received_packet(int readed, t_ping *ping, struct iphdr *ip
 
 	time_of = (get_current_time_millis() - ping->start_time);
 	(void)packet;
-	if (readed < (int)(ping->sweepminsize + sizeof(struct iphdr) + sizeof(struct icmphdr)))
+	if ((readed < (int)sizeof(struct iphdr)) || (F_VERBOSE && readed < (int)(ping->sweepminsize + sizeof(struct iphdr) + sizeof(struct icmphdr))))
 	{
-		if (F_VERBOSE)
-			ft_fprintf(1, "ft_ping: packet too short (%d bytes) from %s\n", readed, inet_ntoa(ip->src));
+		ft_fprintf(1, "ft_ping: packet too short (%d bytes) from %s\n", readed, inet_ntoa(ip->src));
 		ping->received++;
 		return (true);
 	}

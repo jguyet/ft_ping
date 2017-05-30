@@ -53,15 +53,6 @@ BOOLEAN		start_ping(t_ping *ping)
 
 	while (1)
 	{
-		if (F_INCREMENT)
-		{
-			if (ping->sweepminsize >= ping->sweepmaxsize)
-			{
-
-				return (true);
-			}
-			ping->sweepminsize += ping->sweepincrsize;
-		}
 		retry = false;
 		t_packet_received *packet_r;
 		void *packet;
@@ -74,10 +65,19 @@ BOOLEAN		start_ping(t_ping *ping)
 			printf("ft_ping: error to send\n");
 			exit(0);
 		}
-		packet_r = prepare_packet_receiver(ping, 5000);
+		packet_r = prepare_packet_receiver(ping, 4096);
 		retry = !icmp_handle_message(ping, packet_r);
 		destruct_packet_receiver(packet_r);
 		ping->sequence++;
+		if (F_INCREMENT)
+		{
+			if (ping->sweepminsize >= ping->sweepmaxsize)
+			{
+				ping_result();
+				return (true);
+			}
+			ping->sweepminsize += ping->sweepincrsize;
+		}
 		if (retry)
 			return (ping->launch(ping));
 		ft_sleep(1);

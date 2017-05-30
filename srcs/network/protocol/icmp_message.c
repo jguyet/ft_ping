@@ -77,18 +77,18 @@ void		*prepare_packet_to_send(t_ping *ping, size_t size)
 #endif
 	prepare_header(packet, ping);
 #ifdef __linux__
-	pck = ft_strnew(sizeof(struct iphdr) + sizeof(struct icmphdr) + size);
-	ft_memcpy(pck, &packet->ip, sizeof(struct iphdr));
-	ft_memcpy(pck + sizeof(struct iphdr), &packet->header, sizeof(struct icmphdr));
-	ft_memset(pck + sizeof(struct iphdr) + sizeof(struct icmphdr), '0', size);
-	packet->header.checksum = checksum(pck + sizeof(struct iphdr), sizeof(struct icmphdr) + size);
-	ft_memcpy(pck + sizeof(struct iphdr), &packet->header, sizeof(struct icmphdr));
+	pck = ft_strnew(IPHDR_SIZE + ICMP_HEADER_SIZE + size);
+	ft_memcpy(pck, &packet->ip, IPHDR_SIZE);
+	ft_memcpy(pck + IPHDR_SIZE, &packet->header, ICMP_HEADER_SIZE);
+	ft_memset(pck + IPHDR_SIZE + ICMP_HEADER_SIZE, '0', size);
+	packet->header.checksum = checksum(pck + IPHDR_SIZE, ICMP_HEADER_SIZE + size);
+	ft_memcpy(pck + IPHDR_SIZE, &packet->header, ICMP_HEADER_SIZE);
 #else
-	pck = ft_strnew(sizeof(struct icmphdr) + size);
-	ft_memcpy(pck, &packet->header, sizeof(struct icmphdr));
-	ft_memset(pck + sizeof(struct icmphdr), '0', size);
-	packet->header.checksum = checksum(pck, sizeof(struct icmphdr) + size);
-	ft_memcpy(pck, &packet->header, sizeof(struct icmphdr));
+	pck = ft_strnew(ICMP_HEADER_SIZE + size);
+	ft_memcpy(pck, &packet->header, ICMP_HEADER_SIZE);
+	ft_memset(pck + ICMP_HEADER_SIZE, '0', size);
+	packet->header.checksum = checksum(pck, ICMP_HEADER_SIZE + size);
+	ft_memcpy(pck, &packet->header, ICMP_HEADER_SIZE);
 #endif
 	return (pck);
 }
