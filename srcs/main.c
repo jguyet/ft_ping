@@ -80,8 +80,8 @@ BOOLEAN		start_ping(t_ping *ping)
 		retry = icmp_handle_message(ping, packet_r);
 		destruct_packet_receiver(packet_r);
 		ping->sequence++;
-		//if (retry)
-		//	return (ping->launch(ping));
+		if (retry)
+			return (ping->launch(ping));
 		ft_sleep(1);
 	}
 	return (true);
