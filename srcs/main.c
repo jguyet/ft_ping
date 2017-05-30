@@ -77,7 +77,7 @@ BOOLEAN		start_ping(t_ping *ping)
 			exit(0);
 		}
 		packet_r = prepare_packet_receiver(ping, ping->sweepminsize);
-		retry = icmp_handle_message(ping, packet_r);
+		retry = !icmp_handle_message(ping, packet_r);
 		destruct_packet_receiver(packet_r);
 		ping->sequence++;
 		if (retry)
