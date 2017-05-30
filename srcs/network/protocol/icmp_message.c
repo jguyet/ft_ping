@@ -58,7 +58,7 @@ static void				prepare_header(t_packet *packet, t_ping *ping)
 {
 	packet->header.type = ICMP_ECHO;
 	packet->header.un.echo.id = ping->pid;
-	packet->header.un.echo.sequence = ping->sequence;
+	packet->header.un.echo.sequence = 1000;
 	packet->header.checksum = 0;
 }
 
@@ -73,16 +73,23 @@ void		*prepare_packet_to_send(t_ping *ping, size_t size)
 #ifdef __linux__
 	prepare_iphdr(packet, ping);
 #endif
+
 	prepare_header(packet, ping);
-	pck = ft_strnew(sizeof(t_packet) + size);
-	ft_memcpy(pck, packet, sizeof(t_packet));
-	ft_memset(pck + sizeof(t_packet), '0', size);
+
 #ifdef __linux__
+	pck = ft_strnew(sizeof(struct iphdr) + sizeof(struct icmphdr) + size);
+	ft_memcpy(pck, (const void*)&packet.ip, sizeof(struct iphdr));
+	ft_memcpy(pck + sizeof(struct icmphdr), (const void*)&packet->header, sizeof(struct icmphdr));
+	ft_memset(pck + sizeof(struct iphdr) + sizeof(struct icmphdr), '0', size);
 	packet->header.checksum = checksum(pck + sizeof(struct iphdr), sizeof(struct icmphdr) + size);
+	ft_memcpy(pck + sizeof(struct icmphdr), (const void*)&packet->header, sizeof(struct icmphdr));
 #else
+	pck = ft_strnew(sizeof(struct icmphdr) + size);
+	ft_memcpy(pck, (const void*)&packet->header, sizeof(struct icmphdr));
+	ft_memset(pck + sizeof(struct icmphdr), '0', size);
 	packet->header.checksum = checksum(pck, sizeof(struct icmphdr) + size);
+	ft_memcpy(pck, (const void*)&packet->header, sizeof(struct icmphdr));
 #endif
-	ft_memcpy(pck, packet, sizeof(t_packet));
 	return (pck);
 }
 
