@@ -27,7 +27,7 @@ BOOLEAN			icmp_handle_message(t_ping *ping, t_packet_received *packet)
 			printf("MYPID : %d\n", getpid());
 			return (wait_message(ping, packet_r));
 		}*/
-		icmp_process_received_packet(ret, ping, (struct iphdr*)packet->iov[0].iov_base, packet);
+		icmp_process_received_packet(ret, ping, (struct iphdr*)packet->header.msg_iov[0].iov_base, packet);
 		return (true);
 	}
 	return (icmp_error_rcvmsg());
