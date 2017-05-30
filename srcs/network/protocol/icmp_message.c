@@ -78,7 +78,7 @@ void		*prepare_packet_to_send(t_ping *ping, size_t size)
 
 #ifdef __linux__
 	pck = ft_strnew(sizeof(struct iphdr) + sizeof(struct icmphdr) + size);
-	ft_memcpy(pck, (const void*)packet->ip, sizeof(struct iphdr));
+	ft_memcpy(pck, packet->ip, sizeof(struct iphdr));
 	ft_memcpy(pck + sizeof(struct icmphdr), (const void*)&packet->header, sizeof(struct icmphdr));
 	ft_memset(pck + sizeof(struct iphdr) + sizeof(struct icmphdr), '0', size);
 	packet->header.checksum = checksum(pck + sizeof(struct iphdr), sizeof(struct icmphdr) + size);
