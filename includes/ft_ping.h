@@ -78,6 +78,15 @@ typedef	unsigned short		u_short;
 typedef	unsigned int		u_int;
 typedef	unsigned long		u_long;
 
+
+#ifdef __unix__
+	#if BYTE_ORDER == BIG_ENDIAN
+		#define htons(n) (n)
+	#else
+		#define htons(n) (((((unsigned short)(n) & 0xFF)) << 8) | (((unsigned short)(n) & 0xFF00) >> 8))
+	#endif
+#endif
+
 /*
 ** ICMP message HEADER
 */
