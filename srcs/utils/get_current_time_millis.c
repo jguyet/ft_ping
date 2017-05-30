@@ -19,7 +19,7 @@ long		get_current_time_millis()
 {
 	struct timeval time_v;
 
-	if (gettimeofday(&time_v, NULL) == -1)
+	if (gettimeofday(&time_v, 0) == -1)
 		return (0);
 	return (time_v.tv_usec);
 }
