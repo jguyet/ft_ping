@@ -69,14 +69,12 @@ BOOLEAN		start_ping(t_ping *ping)
 		ping->send++;
 		packet = prepare_packet_to_send(ping, ping->sweepminsize);
 		ping->start_time = get_current_time_millis();
-		if (sendto(ping->sock, packet,\
-			sizeof(t_packet) + ping->sweepminsize, MSG_DONTWAIT, (struct sockaddr*)&ping->addr,\
-			sizeof(ping->addr)) <= 0)
+		if (sendto(ping->sock, packet, sizeof(t_packet) + ping->sweepminsize, MSG_DONTWAIT, (struct sockaddr*)&ping->addr, sizeof(ping->addr)) <= 0)
 		{
 			printf("ft_ping: error to send\n");
 			exit(0);
 		}
-		packet_r = prepare_packet_receiver(ping, ping->sweepminsize);
+		packet_r = prepare_packet_receiver(ping, 5000);
 		retry = !icmp_handle_message(ping, packet_r);
 		destruct_packet_receiver(packet_r);
 		ping->sequence++;
