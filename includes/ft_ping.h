@@ -99,24 +99,24 @@ struct icmphdr
 struct iphdr
 {
 #if BYTE_ORDER == LITTLE_ENDIAN
-		u_char  hl:4,			/* header length */
-				version:4;		/* version */
+	u_char  hl:4,			/* header length */
+			version:4;		/* version */
 #endif
 #if BYTE_ORDER == BIG_ENDIAN
-		u_char  version:4,		/* version */
-				hl:4;			/* header length */
+	u_char  version:4,		/* version */
+			hl:4;			/* header length */
 #endif
-		u_char  service;		/* type of service */
-		u_short len;			/* total length */
-		u_short pid;			/* identification */
-		u_short off;			/* fragment offset field */
-#define	IP_DF 0x4000			/* dont fragment flag */
-#define	IP_MF 0x2000			/* more fragments flag */
-		u_char  ttl;			/* time to live */
-		u_char  protocol;		/* protocol */
-		u_short checksum;		/* checksum */
-		struct in_addr src;		/* source and dest address */
-		struct in_addr dest;	/* source and dest address */
+	u_char  service;		/* type of service */
+	u_short len;			/* total length */
+	u_short pid;			/* identification */
+	u_short off;			/* fragment offset field */
+#define	IP_DF 0x4000		/* dont fragment flag */
+#define	IP_MF 0x2000		/* more fragments flag */
+	u_char  ttl;			/* time to live */
+	u_char  protocol;		/* protocol */
+	u_short checksum;		/* checksum */
+	struct in_addr src;		/* source and dest address */
+	struct in_addr dest;	/* source and dest address */
 };
 
 /*
@@ -157,9 +157,10 @@ struct iphdr
 
 typedef struct				s_packet
 {
+# ifdef __linux__
 	struct iphdr			ip;
-	struct icmphdr			header;			/* header of message send 	*/
-	char 					msg[PACKET_X64];/* content of message		*/
+# endif
+	struct icmphdr			header;				/* header of message send 	*/
 }							t_packet;
 
 typedef struct				s_packet_received
@@ -209,11 +210,22 @@ BOOLEAN						load_flags(t_ping *ping, int argc, char **argv);
 
 BOOLEAN						icmp_initialize_connection(t_ping *ping, int ttl);
 
+BOOLEAN						start_ping(t_ping *ping);
+t_ping						*singleton_ping(void);
+
+/*
+** Messages
+*/
 t_packet_received			*prepare_packet_receiver(t_ping *ping, size_t size);
 void						destruct_packet_receiver(t_packet_received *packet);
 
-BOOLEAN						start_ping(t_ping *ping);
-t_ping						*singleton_ping(void);
+void						*prepare_packet_to_send(t_ping *ping, size_t size);
+void						destruct_packet_send(t_packet *packet);
+
+/*
+** Utils
+*/
+unsigned short				checksum(void *b, int len);
 
 # define MESSAGE_RECEIVED_TRUC		0
 # define MESSAGE_RECEIVED_SUCCES	1

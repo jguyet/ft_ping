@@ -30,7 +30,68 @@ t_packet_received		*prepare_packet_receiver(t_ping *ping, size_t size)
 	return (packet);
 }
 
+#ifdef __linux__
+static void				prepare_iphdr(t_packet *packet, t_ping *ping)
+{
+	packet->ip.src.s_addr = INADDR_ANY;
+
+	if (!(inet_pton(AF_INET, ping->shost, &packet->ip.dest)))
+	{
+		printf("ft_ping: Can't set destination network address\n");
+		exit(EXIT_FAILURE);
+	}
+
+	packet->ip.ttl = 64;
+	packet->ip.protocol = IPPROTO_ICMP;
+	packet->ip.version = 4;//ipv4
+	packet->ip.hl = sizeof(struct iphdr) >> 2;
+	packet->ip.pid = ping->pid;
+	packet->ip.service = 0;
+	packet->ip.off = 0;
+	packet->ip.len = sizeof(packet);
+	packet->ip.checksum = 0;
+	packet->ip.checksum = checksum(&packet->ip, sizeof(struct iphdr));
+}
+#endif
+
+static void				prepare_header(t_packet *packet, t_ping *ping)
+{
+	packet->header.type = ICMP_ECHO;
+	packet->header.un.echo.id = ping->pid;
+	packet->header.un.echo.sequence = ping->sequence;
+	packet->header.checksum = 0;
+}
+
+void		*prepare_packet_to_send(t_ping *ping, size_t size)
+{
+	t_packet 	*packet;
+	char		*pck;
+
+	if (!(packet = (t_packet*)malloc(sizeof(t_packet))))
+		return (NULL);
+	ft_bzero(packet, sizeof(*packet));
+#ifdef __linux__
+	prepare_iphdr(packet, ping);
+#endif
+	prepare_header(packet, ping);
+	pck = ft_strnew(sizeof(t_packet) + size);
+	ft_memcpy(pck, packet, sizeof(t_packet));
+	ft_memset(pck + sizeof(t_packet), '0', size);
+#ifdef __linux__
+	packet->header.checksum = checksum(pck + sizeof(struct iphdr), sizeof(struct icmphdr) + size);
+#else
+	packet->header.checksum = checksum(pck, sizeof(struct icmphdr) + size);
+#endif
+	ft_memcpy(pck, packet, sizeof(t_packet));
+	return (pck);
+}
+
 void					destruct_packet_receiver(t_packet_received *packet)
+{
+	free(packet);
+}
+
+void					destruct_packet_send(t_packet *packet)
 {
 	free(packet);
 }

@@ -44,32 +44,6 @@ void		destruct_ping(t_ping *ping)
 }
 
 /*
-** retourne la somme de total d'octet libre de (void* b)
-** sur la longueur (int len)
-*/
-unsigned short checksum(void *b, int len)
-{
-	u_short	*buf;
-	u_short	low;
-	u_short	high;
-	u_int	sum;
-
-	buf = b;
-	sum = 0;
-	while (len > 1)
-	{
-		sum += *buf++;
-		len -= 2;
-	}
-	if (len == 1)
-		sum += buf[0] & 0xFF;
-	low = (sum & 0xFFFF);			/* prend les 2 octet de droite					*/
-	high = (sum >> 16);				/* prend les 2 octet de gauche					*/
-	sum = high + low;				/* aditionne le tout							*/
-	return ((unsigned short)~sum);	/* inverse les bits actif et cast en unsigned	*/
-}
-
-/*
 ** retourne le temps actuel en millisecondes
 */
 long		get_current_time_millis()
@@ -95,6 +69,12 @@ int			wait_message(t_ping *ping, t_packet_received *packet_r)
 			printf("MSG_TRUNC\n");
 			return (MESSAGE_RECEIVED_TRUC);
 		}
+		/*if (((struct iphdr*)packet_r->iov[0].iov_base)->pid != getpid())
+		{
+			printf("PID : %d\n", ((struct iphdr*)packet_r->iov[0].iov_base)->pid);
+			printf("MYPID : %d\n", getpid());
+			return (wait_message(ping, packet_r));
+		}*/
 		return (ret);
 	}
 	return (MESSAGE_RECEIVED_ERROR);
@@ -107,53 +87,6 @@ void		ft_sleep(int t)
 		;
 	g_breakflag = 0;
 }
-
-void		prepare_iphdr(t_packet *packet, t_ping *ping)
-{
-	packet->ip.src.s_addr = INADDR_ANY;//ip local
-
-	if (!(inet_pton(AF_INET, ping->shost, &packet->ip.dest)))
-	{
-		printf("ft_ping: Can't set destination network address\n");
-		exit(EXIT_FAILURE);
-	}
-
-	packet->ip.ttl = 64;
-	packet->ip.protocol = IPPROTO_ICMP;
-	packet->ip.version = 4;//ipv4
-	packet->ip.hl = sizeof(struct iphdr) >> 2;
-	packet->ip.pid = ping->pid;
-	packet->ip.service = 0;
-	packet->ip.off = 0;
-	packet->ip.len = sizeof(packet);
-	packet->ip.checksum = 0;
-	packet->ip.checksum = checksum(&packet->ip, sizeof(struct iphdr));
-}
-
-void		prepare_header(t_packet *packet, t_ping *ping)
-{
-	packet->header.type = ICMP_ECHO;
-	packet->header.un.echo.id = ping->pid;
-	packet->header.un.echo.sequence = ping->sequence;
-	packet->header.checksum = 0;
-}
-
-t_packet	*pack(t_ping *ping)
-{
-	t_packet *packet;
-	int i = 0;
-
-	packet = (t_packet*)malloc(sizeof(t_packet));
-	ft_bzero(packet, sizeof(*packet));
-	prepare_iphdr(packet, ping);
-	prepare_header(packet, ping);
-	for (i = 0; i < (int)sizeof(packet->msg) - 1; i++)
-		packet->msg[i] = i + '0';
-	packet->msg[i] = 0;
-	packet->header.checksum = checksum(&packet->header, sizeof(struct icmphdr) + ping->datalen);
-	return (packet);
-}
-
 
 void	unpack(t_ping *ping, t_packet_received *packet, int cc, long start)
 {
@@ -188,13 +121,13 @@ BOOLEAN		start_ping(t_ping *ping)
 	while (true)
 	{
 		t_packet_received *packet_r;
-		t_packet *packet;
+		void *packet;
 
 		ping->send++;
-		packet = pack(ping);
+		packet = prepare_packet_to_send(ping, PACKET_X64);
 		start = get_current_time_millis();
 		if (sendto(ping->sock, packet,\
-			sizeof(*packet), MSG_DONTWAIT, (struct sockaddr*)&ping->addr,\
+			sizeof(t_packet) + ping->datalen, MSG_DONTWAIT, (struct sockaddr*)&ping->addr,\
 			sizeof(ping->addr)) <= 0)
 			printf("error to send");
 		packet_r = prepare_packet_receiver(ping, 5000);
@@ -231,6 +164,19 @@ void	load_flag_list(t_ping *ping)
 	ping->flags[3] = newflag(&(t_flag){false, "h", true, "[-h sweepincrsize]", NULL, 1 , "invalid increment size: `%s'"});
 	ping->flags[4] = newflag(&(t_flag){false, "m", true, "[-m ttl]", NULL, 1, "invalid TTL: `%s'"});
 	ping->flags[5] = newflag(&(t_flag){false, "t", true, "[-t timeout]", NULL, 1, "invalid timeout: `%s'"});
+}
+
+void	check_os(void)
+{
+#ifdef __linux__
+	return ;
+#endif
+#ifdef __APPLE__
+	return ;
+#else
+	printf("ft_ping : is not posix.\n");
+	exit(0);
+#endif
 }
 
 int	main(int argc, char **argv)
