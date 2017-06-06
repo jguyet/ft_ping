@@ -204,9 +204,9 @@ typedef struct				s_ping
 {
 	char					*shost;		/* string hostargs				*/
 	int						port;		/* port of connection			*/
-	struct hostent			*hname;		/* hostname						*/
 	int						sock;		/* socket descriptor ID			*/
 	struct sockaddr_in		addr;		/* sockaddr of destination		*/
+	char					*destip;	/* ip of Destination			*/
 	int						pid;		/* pid of current program		*/
 	int						ttl;		/* time to live  				*/
 	int						sequence;	/* sequence id  				*/
@@ -222,6 +222,7 @@ typedef struct				s_ping
 	int						mintime;	/* mintime						*/
 	long					totaltime;	/* medium time					*/
 	int						maxtime;	/* maxtime						*/
+	BOOLEAN					retry;
 }							t_ping;
 
 # define F_VERBOSE			ping->flags[0]->actif
@@ -234,9 +235,12 @@ void						load_flag_list(t_ping *ping);
 BOOLEAN						icmp_initialize_connection(t_ping *ping, int ttl);
 BOOLEAN						set_flags_values(t_ping *ping);
 
-BOOLEAN						start_ping(t_ping *ping);
-t_ping						*singleton_ping(void);
 
+t_ping						*singleton_ping(void);
+void						destruct_ping(t_ping *ping);
+BOOLEAN						process_icmp_request(t_ping *ping);
+BOOLEAN						send_icmp_message(t_ping *ping);
+BOOLEAN						wait_icmp_response(t_ping *ping);
 void						ping_result(void);
 
 /*
@@ -261,6 +265,9 @@ BOOLEAN						icmp_error_rcvmsg(void);
 */
 unsigned short				checksum(void *b, int len);
 long						get_current_time_millis();
+char						*get_hostname_ipv4(struct in_addr *addr);
+char						*get_hostname_ipv6(struct in6_addr *addr);
+struct sockaddr_in			*get_sockaddr_in_ipv4(char *host);
 
 # define MESSAGE_RECEIVED_TRUC		0
 # define MESSAGE_RECEIVED_SUCCES	1

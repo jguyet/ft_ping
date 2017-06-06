@@ -38,6 +38,8 @@ SRCSPROG1	=	\
 				srcs/main.c																	\
 				srcs/flags.c																\
 				srcs/ping_result.c															\
+				srcs/utils/get_str_inet_addr.c												\
+				srcs/ping.c																	\
 				srcs/set_flags_values.c														\
 				srcs/signals/signals.c														\
 				srcs/utils/check_os.c														\

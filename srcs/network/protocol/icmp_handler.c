@@ -21,12 +21,6 @@ BOOLEAN			icmp_handle_message(t_ping *ping, t_packet_received *packet)
 
 	if ((ret = recvmsg(ping->sock, &packet->header, 0)) != -1)
 	{
-		/*if (((struct iphdr*)packet_r->iov[0].iov_base)->pid != getpid())
-		{
-			printf("PID : %d\n", ((struct iphdr*)packet_r->iov[0].iov_base)->pid);
-			printf("MYPID : %d\n", getpid());
-			return (wait_message(ping, packet_r));
-		}*/
 		icmp_process_received_packet(ret, ping, (struct iphdr*)packet->header.msg_iov[0].iov_base, packet);
 		return (true);
 	}
@@ -42,7 +36,7 @@ BOOLEAN		icmp_process_received_packet(int readed, t_ping *ping, struct iphdr *ip
 	(void)packet;
 	if ((readed < (int)sizeof(struct iphdr)) || (F_VERBOSE && readed < (int)(ping->sweepminsize + sizeof(struct iphdr) + sizeof(struct icmphdr))))
 	{
-		ft_fprintf(1, "ft_ping: packet too short (%d bytes) from %s\n", readed, inet_ntoa(ip->src));
+		ft_fprintf(1, "ft_ping: packet too short (%d bytes) from %s\n", readed, get_hostname_ipv4(&ip->src));
 		ping->received++;
 		return (true);
 	}
@@ -50,13 +44,17 @@ BOOLEAN		icmp_process_received_packet(int readed, t_ping *ping, struct iphdr *ip
 	if (readed != -1)
 	{
 		printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n",\
-			readed, inet_ntoa(ip->src), ping->sequence, ip->ttl, ((float)(time_of) / 1000));
+			readed, get_hostname_ipv4(&ip->src), ping->sequence, ip->ttl, ((float)(time_of) / 1000));
 		ping->totaltime += time_of;
 		if (ping->mintime == 0 || ping->mintime > time_of)
 			ping->mintime = time_of;
 		if (ping->maxtime == 0 || ping->maxtime < time_of)
 			ping->maxtime = time_of;
 		ping->received++;
+#ifdef __APPLE__
+		if ((int)(readed - ICMP_HEADER_SIZE) < ping->sweepminsize)
+			printf("wrong total length %d instead of %d\n", readed, (int)(ping->sweepminsize + ICMP_HEADER_SIZE + sizeof(struct iphdr)));
+#endif
 	}
 	else
 		printf("Request timeout for icmp_seq %d\n", ping->sequence);

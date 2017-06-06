@@ -14,7 +14,7 @@
 
 static BOOLEAN		print_error(char *error)
 {
-	printf("ft_ping: %s\n", error);
+	ft_fprintf(1, "ft_ping: %s\n", error);
 	return (false);
 }
 

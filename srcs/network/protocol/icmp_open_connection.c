@@ -56,11 +56,5 @@ BOOLEAN			icmp_initialize_connection(t_ping *ping, int ttl)
 #endif
 	if (setsockopt(ping->sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&ping->timeout, sizeof(ping->timeout)) != 0)
 		return (false);
-	ft_bzero(&ping->addr, sizeof(ping->addr));
-	ping->addr.sin_family = PROT_INTERNET_IPV4;
-	ft_memcpy((char*)&ping->addr.sin_addr.s_addr,\
-		(char*) ping->hname->h_addr, ping->hname->h_length);
-	ping->addr.sin_port = 0;
-	ping->addr.sin_addr.s_addr = *(long*)ping->hname->h_addr;
 	return (true);
 }

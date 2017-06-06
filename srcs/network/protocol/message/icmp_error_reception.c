@@ -17,6 +17,6 @@ BOOLEAN			icmp_error_rcvmsg(void)
 	t_ping *ping;
 
 	ping = singleton_ping();
-	printf("Request timeout for icmp_seq %d\n", ping->sequence);
+	ft_fprintf(1, "Request timeout for icmp_seq %d\n", ping->sequence);
 	return (false);
 }

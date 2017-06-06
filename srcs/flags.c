@@ -19,7 +19,23 @@ BOOLEAN			has_help(int argc, char **argv)
 	i = 1;
 	while (i < argc)
 	{
+		if (ft_strcmp(argv[i], "-help") == 0)
+			return (true);
 		if (ft_strcmp(argv[i], "--help") == 0)
+			return (true);
+		i++;
+	}
+	return (false);
+}
+
+BOOLEAN			has_illegal_option(int argc, char **argv)
+{
+	int i;
+
+	i = 1;
+	while (i < argc)
+	{
+		if (ft_strncmp(argv[i], "--", 2) == 0)
 		{
 			printf("ft_ping: illegal option -- -\n");
 			return (true);
@@ -58,32 +74,30 @@ BOOLEAN			activ_flags(t_ping *ping, char *arg)
 	int		i;
 	int		o;
 
-	i = 0;
+	i = -1;
 	if (arg[0] != '-')
 		return (true);
-	while (i < FLAGS_SIZE)
+	while (++i < FLAGS_SIZE)
 	{
 		o = 1;
 		if (ping->flags[i]->special == true)
-		{
-			i++;
 			continue ;
-		}
 		while (o < (int)ft_strlen(arg))
 		{
-			if (ft_strncmp(ping->flags[i]->name, arg + o, ft_strlen(ping->flags[i]->name)) == 0)
+			if (ft_strncmp(ping->flags[i]->name, arg + o,\
+				ft_strlen(ping->flags[i]->name)) == 0)
 			{
 				ping->flags[i]->actif = true;
 				break ;
 			}
 			o++;
 		}
-		i++;
 	}
 	return (true);
 }
 
-BOOLEAN			select_value_special_flags(t_ping *ping, int currentid, char *arg, char **argv, int argc)
+BOOLEAN			select_value_special_flags(t_ping *ping,\
+	int currentid, char *arg, char **argv, int argc)
 {
 	int		i;
 
@@ -117,6 +131,8 @@ BOOLEAN			select_value_special_flags(t_ping *ping, int currentid, char *arg, cha
 
 BOOLEAN			load_host(t_ping *ping, char *arg)
 {
+	struct sockaddr_in *in;
+
 	if (arg[0] == '-')
 		return (false);
 	if (ping->shost != NULL)
@@ -125,17 +141,28 @@ BOOLEAN			load_host(t_ping *ping, char *arg)
 		exit(0);
 	}
 	ping->shost = ft_strdup(arg);
-	ping->hname = gethostbyname(ping->shost);
+	in = get_sockaddr_in_ipv4(ping->shost);
+	if (in == NULL)
+		return (false);
+	ping->addr = *in;
+	ping->destip = get_hostname_ipv4(&ping->addr.sin_addr);
 	return (true);
 }
 
 BOOLEAN			load_flags(t_ping *ping, int argc, char **argv)
 {
-	int i;
+	int			i;
+	BOOLEAN		succes;
 
 	i = 1;
+	succes = true;
+	if (has_illegal_option(argc, argv))
+		succes = true;
 	if (has_help(argc, argv))
-		return (print_help(ping));
+	{
+		print_help(ping);
+		succes = false;
+	}
 	while (i < argc)
 	{
 		load_host(ping, argv[i]);
@@ -144,7 +171,7 @@ BOOLEAN			load_flags(t_ping *ping, int argc, char **argv)
 			i++;
 		i++;
 	}
-	return (true);
+	return (succes);
 }
 
 static t_flag	*newflag(t_flag *f)
