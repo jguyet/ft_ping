@@ -35,7 +35,7 @@ static void				prepare_iphdr(t_packet *packet, t_ping *ping)
 {
 	packet->ip.src.s_addr = INADDR_ANY;
 
-	if (!(inet_pton(AF_INET, ping->shost, &packet->ip.dest)))
+	if (!(inet_pton(AF_INET, ping->destip, &packet->ip.dest)))
 	{
 		printf("ft_ping: Can't set destination network address\n");
 		exit(EXIT_FAILURE);
