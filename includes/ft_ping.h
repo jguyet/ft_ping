@@ -195,7 +195,7 @@ typedef struct				s_flag
 	char					*error;		/* error message				*/
 }							t_flag;
 
-# define FLAGS_SIZE			5
+# define FLAGS_SIZE			6
 
 /*
 ** ping struct
@@ -268,9 +268,5 @@ long						get_current_time_millis();
 char						*get_hostname_ipv4(struct in_addr *addr);
 char						*get_hostname_ipv6(struct in6_addr *addr);
 struct sockaddr_in			*get_sockaddr_in_ipv4(char *host);
-
-# define MESSAGE_RECEIVED_TRUC		0
-# define MESSAGE_RECEIVED_SUCCES	1
-# define MESSAGE_RECEIVED_ERROR		-1
 
 #endif

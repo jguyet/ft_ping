@@ -52,7 +52,7 @@ BOOLEAN			print_help(t_ping *ping)
 
 	i = 0;
 	stack = true;
-	printf("usage: ping [-");
+	printf("usage: ft_ping [-");
 	while (i < FLAGS_SIZE)
 	{
 		if (ping->flags[i]->special && stack == true)
