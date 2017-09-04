@@ -112,8 +112,11 @@ BOOLEAN			select_value_special_flags(t_ping *ping,\
 			i++;
 			continue ;
 		}
-		if (currentid >= argc)
+		if ((currentid + 1) >= argc) {
+			print_help(ping);
+			exit(0);
 			return (false);
+		}
 		if (ping->flags[i]->type == 1 && !ft_is_string_numeric(argv[currentid + 1]))
 		{
 			char *error = ft_strjoin("ft_ping: ", ping->flags[i]->error);
@@ -167,8 +170,9 @@ BOOLEAN			load_flags(t_ping *ping, int argc, char **argv)
 	{
 		load_host(ping, argv[i]);
 		activ_flags(ping, argv[i]);
-		if (select_value_special_flags(ping, i, argv[i], argv, argc))
+		if (select_value_special_flags(ping, i, argv[i], argv, argc)) {
 			i++;
+		}
 		i++;
 	}
 	return (succes);
